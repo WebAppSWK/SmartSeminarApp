@@ -1,0 +1,2 @@
+# SmartSeminarApp
+SmartSeminarApp for FEU
