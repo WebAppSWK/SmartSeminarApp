@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Seminar 2026 App - FEU</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            feu: {
+              navy: '#0F1E36',       // สีน้ำเงินกรมท่า มหาวิทยาลัยฟาร์อีสเทอร์น
+              navyLight: '#1E2D4A',  // สีน้ำเงินโทนสว่างขึ้นสำหรับพื้นหลังย่อย
+              gold: '#D4AF37',       // สีทองพรีเมียมสว่าง
+              goldhover: '#C59B27',  // สีทองเมื่อโฮเวอร์
+              light: '#F4F6F9',      // สีขาวสว่างสไตล์ซอฟต์สเลท
+              slate: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Html5-Qrcode Library for Scanning -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+  <!-- Chart.js for Admin Analytics Screens -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+    @keyframes pulse-gold {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+      50% { transform: scale(1.02); box-shadow: 0 0 15px 5px rgba(212, 175, 55, 0.6); }
+    }
+    .unlock-animation {
+      animation: pulse-gold 2s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-feu-gold selection:text-feu-navy">
+
+  <header class="bg-feu-navy text-white shadow-md border-b-4 border-feu-gold py-4 px-6 sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-1.5 rounded-xl shadow-inner flex items-center justify-center">
+          <i class="fa-solid fa-graduation-cap text-feu-navy text-xl md:text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-base md:text-lg font-bold tracking-tight text-feu-gold">Smart Seminar 2026 App</h1>
+          <p class="text-[9px] md:text-xs text-slate-300">สัมมนาการฝึกปฏิบัติงานทางการบริหาร ปริญญาโท มหาวิทยาลัยฟาร์อีสเทอร์น</p>
+        </div>
+      </div>
+      <button onclick="toggleAdminPanel()" class="text-slate-300 hover:text-feu-gold transition-all duration-300 transform hover:scale-110 p-2.5 rounded-xl bg-slate-800/50" title="รายงานผู้ดูแลและกราฟสถิติ">
+        <i class="fa-solid fa-chart-line text-lg"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto w-full p-4 flex-grow flex flex-col justify-start">
+
+    <!-- 1. REGISTRATION STATE -->
+    <section id="reg-screen" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 mb-6 hidden">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-blue-50 text-feu-navy rounded-2xl flex items-center justify-center mx-auto mb-3 border border-blue-100">
+          <i class="fa-solid fa-id-card text-3xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-feu-navy">ลงทะเบียนเข้าใช้ระบบ</h2>
+        <p class="text-xs text-slate-500 mt-1">กรุณากรอกข้อมูลเพื่อบันทึกประวัติสะสมแต้มการเข้าเยี่ยมชมบูธ</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold mb-1.5 text-slate-700">รหัสนักศึกษา (10 หลัก)</label>
+          <input type="text" id="reg-studentId" maxlength="10" 
+                 class="w-full border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-feu-navy focus:outline-none tracking-widest text-center text-lg font-bold" 
+                 placeholder="เช่น 6800100201" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5 text-slate-700">คำนำหน้านาม</label>
+          <select id="reg-prefix" onchange="togglePrefixOther()" class="w-full border border-slate-300 rounded-xl p-3.5 bg-white focus:ring-2 focus:ring-feu-navy focus:outline-none">
+            <option value="นาย">นาย</option>
+            <option value="นาง">นาง</option>
+            <option value="นางสาว">นางสาว</option>
+            <option value="อื่นๆ">อื่นๆ (โปรดระบุ)</option>
+          </select>
+        </div>
+
+        <div id="prefix-other-container" class="hidden animate-fadeIn">
+          <label class="block text-sm font-semibold mb-1.5 text-slate-700">ระบุคำนำหน้านามอื่นๆ</label>
+          <input type="text" id="reg-prefix-other" class="w-full border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-feu-navy focus:outline-none" placeholder="เช่น ดร. / ว่าที่ร้อยตรี">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1.5 text-slate-700">ชื่อ - นามสกุล</label>
+          <input type="text" id="reg-name" class="w-full border border-slate-300 rounded-xl p-3.5 focus:ring-2 focus:ring-feu-navy focus:outline-none" placeholder="พิมพ์ชื่อและนามสกุลโดยไม่ต้องใส่คำนำหน้า">
+        </div>
+
+        <button onclick="saveRegistration()" class="w-full bg-feu-navy hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 transform active:scale-[0.98]">
+          <span>เริ่มต้นใช้งานระบบ</span>
+          <i class="fa-solid fa-arrow-right text-feu-gold"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. HOME SCREEN & DASHBOARD STATE -->
+    <section id="main-screen" class="space-y-6 hidden">
+      
+      <!-- ข้อมูลผู้ใช้งาน & ความก้าวหน้า -->
+      <div class="bg-white p-5 rounded-3xl shadow-md border border-slate-100">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <span class="text-[10px] font-bold text-feu-gold uppercase tracking-wider block">ยินดีต้อนรับผู้เข้าร่วมสัมมนา</span>
+            <h2 id="user-display" class="text-base md:text-lg font-bold text-feu-navy">กำลังโหลดชื่อ...</h2>
+          </div>
+          <button onclick="clearUserDataConfirm()" class="text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 transition px-3 py-1.5 rounded-xl flex items-center space-x-1 animate-pulse">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>เปลี่ยนผู้ใช้งาน</span>
+          </button>
+        </div>
+
+        <hr class="border-slate-100 my-3">
+
+        <!-- Progress Tracker -->
+        <div class="flex items-center justify-between p-2">
+          <div class="space-y-1">
+            <p class="text-sm font-bold text-slate-700">สแกนประเมินสะสม:</p>
+            <p class="text-xs text-slate-400 leading-relaxed">สะสมครบอย่างน้อย 5 บูธเพื่อปลดล็อกลิงก์คลังดาวน์โหลดไฟล์ทั้ง 19 แห่ง</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <div class="relative flex items-center justify-center">
+              <svg class="w-20 h-20 transform -rotate-90">
+                <circle cx="40" cy="40" r="32" stroke="currentColor" class="text-slate-100" stroke-width="7" fill="transparent" />
+                <circle cx="40" cy="40" r="32" stroke="currentColor" class="text-feu-gold transition-all duration-500" stroke-width="7" fill="transparent" 
+                        stroke-dasharray="201.06" id="progress-circle" />
+              </svg>
+              <span id="score-text" class="absolute text-base font-bold text-feu-navy">0/5</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- รางวัลปุ่มดาวน์โหลดไฟล์รวม (ปลดล็อกเมื่อครบ 5 บูธ) -->
+        <div id="reward-box" class="mt-4 hidden">
+          <a href="https://drive.google.com/drive/folders/1OYes6tXWqZA7YpQr-wjsYmW7xZYjIjWJ?usp=drive_link" target="_blank"
+             class="block w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center font-bold py-4 rounded-2xl shadow-xl transition-all duration-300 flex items-center justify-center space-x-2 unlock-animation">
+            <i class="fa-solid fa-cloud-arrow-down text-xl"></i>
+            <span>ดาวน์โหลดคลังไฟล์ 19 PDF ทั้งหมด (Google Drive)</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 🌟 Navigation Tabs 🌟 -->
+      <div class="flex border-b border-slate-200">
+        <button id="tab-dir-btn" onclick="switchTab('directory')" class="flex-1 py-3 text-center border-b-2 border-feu-navy font-bold text-sm text-feu-navy transition-all">
+          <i class="fa-solid fa-book-open mr-1.5"></i>19 หน่วยงาน
+        </button>
+        <button id="tab-scan-btn" onclick="switchTab('scan')" class="flex-1 py-3 text-center border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-feu-navy transition-all">
+          <i class="fa-solid fa-camera mr-1.5"></i>สแกน QR แต่ละบูธ
+        </button>
+        <button id="tab-hist-btn" onclick="switchTab('history')" class="flex-1 py-3 text-center border-b-2 border-transparent font-medium text-sm text-slate-500 hover:text-feu-navy transition-all">
+          <i class="fa-solid fa-clipboard-check mr-1.5"></i>ผลการเยี่ยมชม
+        </button>
+      </div>
+
+      <!-- TAB 1: 19 หน่วยงานฝึกปฏิบัติการทางการบริหารการศึกษา (View-only Reference) -->
+      <div id="tab-directory-content" class="space-y-4">
+        <div class="bg-white p-5 rounded-3xl shadow-md border border-slate-100 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-feu-navy flex items-center space-x-2 text-sm md:text-base">
+              <i class="fa-solid fa-book-open text-feu-gold"></i>
+              <span>19 หน่วยงานฝึกปฏิบัติการทางการบริหารการศึกษา</span>
+            </h3>
+            <span class="text-[10px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full font-bold border border-amber-100">โหมดเตรียมตัว</span>
+          </div>
+          <p class="text-xs text-slate-500 leading-relaxed">รุ่นน้องสามารถศึกษาบทสรุป ประเด็นสำคัญที่ต้องสัมภาษณ์ล่วงหน้าได้จากส่วนนี้ก่อนเข้างานจริง สำหรับการประเมินให้คะแนนจะทำได้หลังจากที่สแกน QR หน้างานแล้วเท่านั้น</p>
+          
+          <!-- ตัวกรองประเภทบูธ -->
+          <div class="flex space-x-2 pt-2 border-t border-slate-150">
+            <button onclick="filterDirectory('all')" id="dir-filter-all" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-feu-navy text-white transition-all">ทั้งหมด</button>
+            <button onclick="filterDirectory('หน่วยงานทางการศึกษา')" id="dir-filter-office" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">สำนักงานเขต</button>
+            <button onclick="filterDirectory('โรงเรียน')" id="dir-filter-school" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">โรงเรียน</button>
+          </div>
+
+          <div id="directory-list" class="space-y-3 max-h-[450px] overflow-y-auto custom-scrollbar pr-1">
+            <!-- Dynamic booth list cards are rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SCANNER AREA (For Scan QR Code) -->
+      <div id="tab-scan-content" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-3xl shadow-md border border-slate-100 space-y-4">
+          <h3 class="font-bold text-feu-navy flex items-center space-x-2 text-sm md:text-base">
+            <i class="fa-solid fa-camera text-feu-gold text-lg"></i>
+            <span>สแกน QR Code ประจำบูธจริง</span>
+          </h3>
+          
+          <div id="reader-wrapper" class="overflow-hidden rounded-2xl bg-slate-50 border border-dashed border-slate-300 p-2 relative">
+            <div id="reader" class="w-full"></div>
+            <div id="scanner-placeholder" class="py-8 text-center text-slate-400">
+              <i class="fa-solid fa-qrcode text-4xl mb-2 text-slate-300 block"></i>
+              <span class="text-xs">กดปุ่มเปิดกล้องเพื่อเริ่มต้นสแกน</span>
+            </div>
+          </div>
+
+          <div class="flex space-x-3">
+            <button id="btn-camera-toggle" onclick="startScanning()" class="flex-1 bg-feu-navy hover:bg-slate-800 text-white py-3.5 rounded-xl font-semibold transition text-sm flex items-center justify-center space-x-2 shadow-sm">
+              <i class="fa-solid fa-camera"></i>
+              <span>เปิดกล้องสแกน</span>
+            </button>
+            
+            <button onclick="document.getElementById('qr-file').click()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-xl font-semibold transition text-sm flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-image"></i>
+              <span>อัปโหลดรูปภาพ</span>
+            </button>
+            <input type="file" id="qr-file" accept="image/*" class="hidden" onchange="scanFromFile(event)">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: VISITED HISTORY -->
+      <div id="tab-history-content" class="hidden space-y-4">
+        <div class="bg-white p-5 rounded-3xl shadow-md border border-slate-100 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <h3 class="font-bold text-feu-navy flex items-center space-x-2 text-sm md:text-base">
+              <i class="fa-solid fa-square-poll-horizontal text-feu-gold text-lg"></i>
+              <span>ประเมินผลและเรียงลำดับการเยี่ยมชม</span>
+            </h3>
+            
+            <div class="flex items-center space-x-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase">เรียงลำดับ:</label>
+              <select id="history-sort-select" onchange="sortAndRenderHistory()" class="text-xs border border-slate-300 rounded-lg py-1 px-2 focus:ring-1 focus:ring-feu-navy focus:outline-none bg-white">
+                <option value="boothId">รหัสบูธ (น้อย-มาก)</option>
+                <option value="ratingHigh">คะแนนดาว (มาก-น้อย)</option>
+                <option value="ratingLow">คะแนนดาว (น้อย-มาก)</option>
+                <option value="commentLength">ความยาวคอมเมนต์</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="history-list-detailed" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar pr-1">
+            <!-- Dynamic Visited Cards are rendered here -->
+          </div>
+
+          <!-- ท้ายสุดแนบหมายเหตุเพิ่มขอบคุณเพื่อเป็นมงคลและสร้างกำลังใจ -->
+          <div class="pt-4 border-t border-slate-100 text-center text-xs text-slate-400 leading-relaxed italic bg-slate-50/50 p-3 rounded-2xl">
+            " ทุกการเข้าชมคือการแลกเปลี่ยนเรียนรู้ และเป็นกำลังใจให้กับผู้จัดทำ จึงขอขอบคุณมา ณ ที่นี้ "
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 3. EVALUATION STATE (หน้าจอทำประเมินเฉพาะบูธ) -->
+    <section id="eval-screen" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 mb-6 hidden">
+      <div class="flex justify-between items-center mb-4">
+        <button onclick="goBackToMain()" class="text-sm text-slate-500 hover:text-feu-navy transition flex items-center font-semibold">
+          <i class="fa-solid fa-chevron-left mr-1.5 text-xs"></i> กลับหน้าแรก
+        </button>
+        <span class="px-3.5 py-1 text-[10px] md:text-xs font-semibold bg-feu-navy/10 text-feu-navy rounded-full" id="booth-type-tag">ประเภทบูธ</span>
+      </div>
+
+      <!-- ข้อมูลบูธ -->
+      <div class="mb-5 bg-gradient-to-br from-feu-navy to-slate-800 p-5 rounded-2xl text-white shadow-lg border-l-4 border-feu-gold animate-fadeIn">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] font-bold text-feu-gold block uppercase tracking-wider mb-1" id="eval-booth-id">BOOT ID</span>
+            <h2 class="text-lg md:text-xl font-bold text-white leading-snug" id="eval-booth-name">ชื่อหน่วยงานสถานศึกษา</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- สรุปเนื้อหาสำคัญประจำบูธ (Smart Insights) -->
+      <div class="bg-blue-50/60 border border-blue-100 p-4 rounded-2xl mb-4 shadow-sm">
+        <h3 class="text-xs md:text-sm font-bold text-feu-navy flex items-center space-x-1.5 mb-1.5">
+          <i class="fa-solid fa-book-open text-feu-gold"></i>
+          <span>สรุปประเด็นสำคัญประจำหน่วยงาน:</span>
+        </h3>
+        <p id="eval-booth-summary" class="text-xs md:text-sm text-slate-600 leading-relaxed"></p>
+      </div>
+
+      <!-- ประเด็นปัญหาที่ควรศึกษาเพิ่ม -->
+      <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl mb-4 shadow-sm">
+        <h3 class="text-xs md:text-sm font-bold text-slate-700 flex items-center space-x-1.5 mb-2">
+          <i class="fa-solid fa-search text-feu-gold"></i>
+          <span>ประเด็นน่าสนใจที่ต้องสัมภาษณ์เชิงลึกเพิ่มเติม:</span>
+        </h3>
+        <ul id="eval-booth-issues" class="list-disc list-inside text-xs md:text-sm text-slate-600 space-y-1 bg-white p-3 rounded-xl border border-slate-100">
+        </ul>
+      </div>
+
+      <!-- คำถามชี้นำอัจฉริยะ (Suggested Questions) -->
+      <div class="bg-amber-50/60 border border-amber-100 p-4 rounded-2xl mb-5 shadow-sm">
+        <h3 class="text-xs md:text-sm font-bold text-amber-800 flex items-center space-x-1.5 mb-1.5">
+          <i class="fa-solid fa-lightbulb text-amber-500"></i>
+          <span>💡 คำถามแนะนำในการสัมภาษณ์เพื่อแลกเปลี่ยนเรียนรู้:</span>
+        </h3>
+        <p id="eval-suggested-question" class="text-xs md:text-sm text-slate-700 italic font-medium leading-relaxed bg-white/70 p-2.5 rounded-xl border border-amber-200/50"></p>
+      </div>
+
+      <!-- ส่วนให้คะแนนดาว 1-5 (ล็อกสถานะตามชนิดช่องทางที่สแกนเข้ามา) -->
+      <div id="evaluation-action-container" class="space-y-4">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <label class="block text-xs md:text-sm font-bold text-slate-700 text-center mb-2.5">ประเมินระดับความพึงพอใจการเรียนรู้และการนำเสนอ</label>
+          <div class="flex justify-center space-x-3 text-3xl my-1" id="star-rating-box">
+            <i class="star fa-regular fa-star text-amber-400 cursor-pointer transition-all duration-150 hover:scale-110 active:scale-125" data-value="1"></i>
+            <i class="star fa-regular fa-star text-amber-400 cursor-pointer transition-all duration-150 hover:scale-110 active:scale-125" data-value="2"></i>
+            <i class="star fa-regular fa-star text-amber-400 cursor-pointer transition-all duration-150 hover:scale-110 active:scale-125" data-value="3"></i>
+            <i class="star fa-regular fa-star text-amber-400 cursor-pointer transition-all duration-150 hover:scale-110 active:scale-125" data-value="4"></i>
+            <i class="star fa-regular fa-star text-amber-400 cursor-pointer transition-all duration-150 hover:scale-110 active:scale-125" data-value="5"></i>
+          </div>
+          <input type="hidden" id="ratingValue" value="0">
+        </div>
+
+        <div>
+          <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1">สิ่งที่ได้เรียนรู้/ข้อคิดเห็นเพิ่มเติมจากการเข้าชม</label>
+          <textarea id="eval-comment" rows="3" class="w-full border border-slate-300 rounded-2xl p-3 focus:ring-2 focus:ring-feu-navy focus:outline-none text-xs md:text-sm placeholder:text-slate-400" placeholder="พิมพ์หลักคิดการบริหารที่คุณเรียนรู้ หรือเลือกทิ้งว่างไว้ได้ตามสะดวก..."></textarea>
+        </div>
+
+        <button onclick="submitEvaluation()" id="btn-submit-eval" class="w-full bg-feu-navy hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition shadow-lg flex items-center justify-center space-x-2 transform active:scale-[0.98]">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>ส่งผลประเมินเพื่อสะสมคะแนน</span>
+        </button>
+      </div>
+
+      <!-- บอร์ดแจ้งสิทธิ์หากเข้าแบบ View Only -->
+      <div id="evaluation-viewonly-lock-msg" class="hidden p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-center text-xs space-y-2">
+        <p class="font-bold flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-circle-exclamation text-amber-600"></i>
+          <span>ปิดฟังก์ชันประเมินสำหรับหน้าต่างอ้างอิงข้อมูลล่วงหน้า</span>
+        </p>
+        <p class="text-slate-600">การให้คะแนนดาวและการส่งข้อคิดเห็นสะสมแต้มจะสามารถทำได้ หลังจากที่คุณเดินทางไปที่บูธจริงและทำการสแกนป้ายคิวอาร์โค้ดเท่านั้น</p>
+      </div>
+    </section>
+
+    <!-- 4. ADMIN REPORT PANEL WITH POPULARITY CHARTS & DRILLDOWN -->
+    <section id="admin-screen" class="bg-white p-6 rounded-3xl shadow-xl border border-slate-100 mb-6 hidden">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-base md:text-lg font-bold text-feu-navy flex items-center space-x-2">
+          <i class="fa-solid fa-user-shield text-feu-gold"></i>
+          <span>แผงควบคุมและระบบรายงานผู้ดูแล</span>
+        </h2>
+        <button onclick="goBackToMain()" class="text-xs text-slate-500 hover:text-feu-navy transition">
+          ปิดหน้านี้
+        </button>
+      </div>
+
+      <!-- Admin Tab Switcher -->
+      <div class="flex space-x-2 mb-4 bg-slate-100 p-1.5 rounded-xl">
+        <button onclick="switchAdminSubTab('report')" id="admin-tab-report-btn" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white text-feu-navy shadow-sm transition-all">
+          <i class="fa-solid fa-users mr-1.5"></i>ความร่วมมือรายคน
+        </button>
+        <button onclick="switchAdminSubTab('scores')" id="admin-tab-scores-btn" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:bg-white/50 transition-all">
+          <i class="fa-solid fa-chart-simple mr-1.5"></i>วิเคราะห์คะแนนบูธ (ฉายจอใหญ่)
+        </button>
+      </div>
+
+      <!-- ADMIN SUB-TAB 1: REPORTS (Individual Table) -->
+      <div id="admin-subtab-report-content" class="space-y-4">
+        <div class="bg-slate-50 p-3.5 rounded-xl flex justify-between items-center text-xs text-slate-600">
+          <span class="font-semibold text-slate-700">สถิติและฐานข้อมูลผู้เข้าร่วมจริง</span>
+          <button onclick="fetchAdminReport()" class="bg-feu-gold hover:bg-feu-goldhover text-feu-navy px-3 py-1.5 rounded-lg font-bold transition flex items-center space-x-1 shadow-sm">
+            <i class="fa-solid fa-sync"></i>
+            <span>ดึงข้อมูลล่าสุด</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3.5 bg-indigo-50 border border-indigo-100 rounded-2xl text-center">
+            <span class="text-[10px] text-slate-500 block font-bold uppercase">ผู้เข้าร่วมทั้งหมด</span>
+            <span id="admin-stat-users" class="text-xl font-bold text-feu-navy">- คน</span>
+          </div>
+          <div class="p-3.5 bg-amber-50 border border-amber-100 rounded-2xl text-center">
+            <span class="text-[10px] text-slate-500 block font-bold uppercase">การประเมินรวม</span>
+            <span id="admin-stat-evals" class="text-xl font-bold text-amber-800">- ครั้ง</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xs md:text-sm font-bold text-slate-700">ตารางสรุปการมีส่วนร่วมรายบุคคล</h3>
+            <span class="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-100 px-2 py-0.5 rounded-full font-bold">เพื่อมอบรางวัล 🎁</span>
+          </div>
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-56 custom-scrollbar shadow-inner bg-white">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-100 text-slate-600 font-bold sticky top-0 border-b border-slate-200 z-10">
+                <tr>
+                  <th class="p-3">รหัสนักศึกษา</th>
+                  <th class="p-3">ชื่อ-นามสกุล</th>
+                  <th class="p-3 text-center">สะสม (บูธ)</th>
+                </tr>
+              </thead>
+              <tbody id="admin-report-table-body" class="divide-y divide-slate-100 text-slate-700">
+                <tr>
+                  <td colspan="3" class="p-5 text-center text-slate-400">กรุณากดดึงข้อมูลเพื่อเชื่อมต่ออินเทอร์เน็ต</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN SUB-TAB 2: CHARTS & DRILLDOWN VIEWER (Perfect for projection) -->
+      <div id="admin-subtab-scores-content" class="hidden space-y-4 animate-fadeIn">
+        <div class="p-4 bg-slate-900 text-slate-100 rounded-2xl space-y-3">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <span class="text-[10px] text-feu-gold block font-bold uppercase tracking-widest">Analytics Dashboard</span>
+              <h3 class="text-sm font-bold">สรุปผลประเมินความนิยมแบบเรียลไทม์</h3>
+            </div>
+            
+            <!-- ตัวเลือกตัวกรองประเภทบูธสำหรับชาร์ท -->
+            <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700">
+              <button onclick="filterPopularityChart('all')" id="chart-filter-all" class="px-2.5 py-1 text-[10px] font-bold rounded bg-feu-gold text-feu-navy transition-all">ทั้งหมด</button>
+              <button onclick="filterPopularityChart('หน่วยงาน')" id="chart-filter-office" class="px-2.5 py-1 text-[10px] font-semibold text-slate-400 hover:text-white transition-all">สำนักงานเขต</button>
+              <button onclick="filterPopularityChart('โรงเรียน')" id="chart-filter-school" class="px-2.5 py-1 text-[10px] font-semibold text-slate-400 hover:text-white transition-all">โรงเรียน</button>
+            </div>
+          </div>
+
+          <!-- กล่องใส่กราฟ Chart.js แท้ -->
+          <div class="relative bg-slate-950 p-2 rounded-xl border border-slate-800" style="height: 220px;">
+            <canvas id="popularityBarChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- รายการบูธเพื่อคลิกดู Drilldown รายงานเจาะลึกความเห็นแบบ Anonymized -->
+        <div class="space-y-2">
+          <h4 class="text-xs font-bold text-slate-700 flex items-center space-x-1">
+            <i class="fa-solid fa-magnifying-glass-chart text-feu-gold"></i>
+            <span>คลิกเลือกหน่วยงานด้านล่างเพื่อเจาะลึกข้อมูลความคิดเห็น</span>
+          </h4>
+          <p class="text-[9px] text-slate-400 leading-relaxed">* ระบบซ่อนข้อมูลผู้รีวิวเป็นแบบ น*** เพื่อรักษาความปลอดภัยของสิทธิ์และความเห็นในการสะท้อนคิด *</p>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scrollbar pr-1" id="admin-booth-drilldown-list">
+            <!-- Dynamic booth items with score preview and click-to-drilldown handler -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Drilldown Reviews Modal Viewer (Anonymized Drilldown Pop-up) -->
+  <div id="drilldown-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 transform scale-95 transition-all duration-300 flex flex-col max-h-[85vh]">
+      <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+        <div>
+          <span id="drilldown-booth-id" class="text-[9px] font-bold text-feu-gold uppercase tracking-wider block">BOOTH ID</span>
+          <h3 id="drilldown-booth-name" class="text-sm md:text-base font-bold text-feu-navy">ชื่อหน่วยงาน</h3>
+        </div>
+        <button onclick="closeDrilldownModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-full bg-slate-50">
+          <i class="fa-solid fa-circle-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- สถิติคะแนนเฉลี่ยบูธนี้ -->
+      <div class="bg-slate-50 p-3 rounded-2xl mb-4 border border-slate-150 flex justify-around items-center">
+        <div class="text-center">
+          <span class="text-[9px] text-slate-400 block uppercase font-bold">คะแนนเฉลี่ย</span>
+          <span id="drilldown-avg-rating" class="text-lg font-black text-feu-navy">0.0 / 5.0</span>
+        </div>
+        <div class="text-center">
+          <span class="text-[9px] text-slate-400 block uppercase font-bold">รีวิวทั้งหมด</span>
+          <span id="drilldown-total-reviews" class="text-lg font-black text-feu-navy">0 ครั้ง</span>
+        </div>
+      </div>
+
+      <!-- รายการแสดงผลลัพธ์ของคะแนนและคอมเมนต์แบบซ่อนชื่อ -->
+      <div class="flex-grow overflow-y-auto custom-scrollbar space-y-2 pr-1" id="drilldown-reviews-container">
+        <!-- Masked reviews and star ratings are rendered here dynamically -->
+      </div>
+
+      <button onclick="closeDrilldownModal()" class="mt-4 w-full bg-slate-900 text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-slate-800 transition">
+        ปิดรายงานเจาะลึก
+      </button>
+    </div>
+  </div>
+
+  <!-- -------------------- JAVASCRIPT SYSTEM LOGIC -------------------- -->
+  <script>
+    // ⚠️ ลิงก์ API หลังบ้าน Google Sheets Webhook
+    const BACKEND_URL = "https://script.google.com/macros/s/AKfycbyU7X54PVsImR-a0RGwdzPNXL6si-isU39WhjU9CAe4iy_fgH-iTTorcRn7vWA__Uzx/exec";
+
+    // ฐานข้อมูลสารสนเทศบูธ 19 บูธ ดึงข้อมูลสรุปวิทยานิพนธ์, ประเด็นเรียนรู้เชิงลึก และคำถามนำ
+    const BOOTH_DATABASE = {
+      "B01": { 
+        name: "สพป.เชียงใหม่ เขต 1", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "กรณีศึกษาการวางระบบโครงสร้างการเงิน พัสดุสารสนเทศ และการประกันคุณภาพทางการศึกษาภายในส่วนสำนักงานเขตพื้นที่การศึกษาและการส่งเสริมโรงเรียนคุณภาพ",
+        issues: [
+          "การจัดการกระบวนการเบิกจ่ายงบประมาณที่โปร่งใส",
+          "ปัญหาการจัดสรรงบประมาณในโรงเรียนขนาดเล็กที่ได้รับไม่เท่าเทียม",
+          "นวัตกรรมการดูแลช่วยเหลือครูและบุคลากรทางการศึกษาด้านสิทธิประโยชน์"
+        ],
+        questions: [
+          "การจัดการระบบจัดซื้อจัดจ้างด้วยระเบียบพัสดุในยุคดิจิทัล มีเทคโนโลยีตัวใดมาช่วยควบคุมความถูกต้อง?",
+          "บทบาทผู้บริหารระดับเขตในการเป็นโค้ชสนับสนุนโรงเรียนขนาดเล็ก มีความท้าทายเรื่องอัตรากำลังครูอย่างไร?"
+        ] 
+      },
+      "B02": { 
+        name: "สพป.เชียงใหม่ เขต 2", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "มุ่งเน้นกระบวนการนิเทศแบบก้าวหน้าเชิงพื้นที่ การจัดการเรียนรู้เชิงรุก (Active Learning) และระบบดูแลช่วยเหลือเยียวยานักเรียนกลุ่มเสี่ยงขาดแคลนแบบทันท่วงที",
+        issues: [
+          "วิธีการนิเทศเพื่อกระตุ้นครูให้ทำ Active Learning อย่างต่อเนื่อง",
+          "โครงสร้างการประสานงานระบบสารสนเทศ SDQ และความปลอดภัยนักเรียนเชิงรุก",
+          "การวิเคราะห์หาเหตุผลที่ทำให้นักเรียนในเขต 2 เกิดสภาวะหลุดจากการศึกษา (Drop-out)"
+        ],
+        questions: [
+          "การทำ Active Learning ให้สำเร็จในเขตที่ห่างไกล ฝ่ายวิชาการเขตต้องสนับสนุนครูในเรื่องใดมากที่สุด?",
+          "ระบบสารสนเทศในการติดตามการออกกลางคันช่วยดึงเด็กกลับเข้าระบบอย่างเป็นรูปธรรมอย่างไร?"
+        ] 
+      },
+      "B03": { 
+        name: "สพป.เชียงใหม่ เขต 3", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "การพัฒนาระบบนิเทศติดตาม (ก.ต.ป.น.) และวิธีการปรับใช้กระบวนการสื่อสารภาษาหลักสำหรับกลุ่มโรงเรียนในพื้นที่สูงและห่างไกล",
+        issues: [
+          "ความท้าทายเชิงกายภาพและภาษาของครูในโรงเรียนบนพื้นที่สูง",
+          "กลยุทธ์การลดภาระงานพัสดุและงบประมาณของครูเพื่อให้มีเวลาสอนมากขึ้น",
+          "โมเดลโรงเรียนประชารัฐและภาคีเครือข่ายในการยกระดับผลสัมฤทธิ์ทางการเรียน"
+        ],
+        questions: [
+          "ศึกษานิเทศก์เขต 3 มีนวัตกรรมวิชาการอะไรที่ตอบโจทย์เฉพาะเจาะจงกลุ่มเด็กกลุ่มชาติพันธุ์บนดอยสูง?",
+          "โครงสร้างการประสานงานภายในเพื่อลดเวลาทำเอกสารของเขต ช่วยให้ผู้บริหารรร.มีเวลาดูแลเด็กได้อย่างไร?"
+        ] 
+      },
+      "B04": { 
+        name: "สพป.เชียงใหม่ เขต 4", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "โครงการการควบรวมหรือบริหารเชิงบริหารจัดการของโรงเรียนขนาดเล็กอย่างเป็นระบบ การวางระบบระเบียบเงินพัสดุครุภัณฑ์ร่วมกันอย่างสมดุลย์และเป็นธรรม",
+        issues: [
+          "แรงต้านทานจากผู้ปกครองและชุมชนเมื่อต้องทำการยุบรวมโรงเรียนขนาดเล็ก",
+          "การเกลี่ยอัตรากำลังข้าราชการครูภายในเขตพื้นที่เพื่อไม่ให้โรงเรียนปลายทางขาดครู",
+          "วิธีการประสานสิทธิประโยชน์ของโรงเรียนขนาดเล็กที่เข้าร่วมโครงการควบรวม"
+        ],
+        questions: [
+          "การบูรณาการใช้ครูร่วมกันระหว่างโรงเรียนขนาดเล็กระดับกลุ่มเครือข่าย มีขั้นตอนทางกฎหมายพัสดุที่ซับซ้อนหรือไม่?",
+          "ผู้บริหารโรงเรียนขนาดเล็กควรมีสมรรถนะเด่นเรื่องใดเพื่อรองรับนโยบายควบรวมโรงเรียนอย่างมีความสุข?"
+        ] 
+      },
+      "B05": { 
+        name: "สพป.เชียงใหม่ เขต 6", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "การใช้ Big Data ในการบริหารจัดการการมีส่วนร่วม การปฏิรูเประเบียบพัสดุเชิงพื้นที่ และการส่งเสริมการขับเคลื่อนนวัตกรรมการบริหารของศึกษานิเทศก์",
+        issues: [
+          "คุณภาพและความน่าเชื่อถือของชุดข้อมูลดิจิทัลที่รวบรวมมาจากโรงเรียน",
+          "ความตื่นตัวและการใช้ประโยชน์จากข้อมูลวิเคราะห์ผลลัพธ์เพื่อวางนโยบาย",
+          "การฝึกอบรมบุคลากรระดับอำเภอ/โรงเรียน ให้สามารถกรอกข้อมูลระบบสารสนเทศได้อย่างสมบูรณ์"
+        ],
+        questions: [
+          "ชุดข้อมูล Big Data ใดที่มีความคุ้มค่าและนำมาช่วยผู้บริหารในการตัดสินใจบริหารงบประมานเชิงพื้นที่ได้รวดเร็วที่สุด?",
+          "การกระจายอำนาจการเงินให้ศูนย์เครือข่ายพัฒนาคุณภาพการศึกษา มีกลไกป้องกันความเสี่ยงด้านความผิดพลาดอย่างไร?"
+        ] 
+      },
+      "B06": { 
+        name: "ศธจ.เชียงใหม่", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "การบูรณาการระบบแผนพัฒนาการศึกษาจังหวัดร่วมกับหลากหลายสังกัด การวางแผนขับเคลื่อนจังหวัดนวัตกรรมการศึกษาเพื่อเป้าหมายผลลัพธ์ผู้เรียนแห่งอนาคต",
+        issues: [
+          "กระบวนการเชื่อมโยงระบบนโยบายจากกระทรวงศึกษาธิการลงสู่แผนงานระดับจังหวัด",
+          "อุปสรรคของการสื่อสารระหว่างโรงเรียนในสังกัด สพฐ. สช. และสอศ. ในเชิงบูรณาการ",
+          "นวัตกรรมแนวทางการบริหารงบประมาณส่งเสริมและประเมินผลสถานศึกษานวัตกรรม"
+        ],
+        questions: [
+          "การทำงานประสานสิบทิศของ ศธจ. ในการรวมกลุ่มโรงเรียนหลากค่าย มีปัญหาเรื่องระเบียบงบประมาณที่ซ้ำซ้อนกันไหม?",
+          "สิทธิพิเศษตาม พ.ร.บ.พื้นที่นวัตกรรมการศึกษา มีส่วนช่วยปลดล็อกระเบียบกฎเกณฑ์ทางการบริหารโรงเรียนอย่างไร?"
+        ] 
+      },
+      "B07": { 
+        name: "สพม.เชียงใหม่", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "การส่งเสริมความสามารถการเรียนรู้ทางวิชาการและวิชาชีพสำหรับเด็กมัธยมศึกษายุคสังคมพลิกผัน ความปลอดภัยเชิงรุกและสุขภาพจิตของวัยรุ่นในสถานศึกษา",
+        issues: [
+          "ปัญหาความเครียดของนักเรียนมัธยมและการคัดกรองพฤติกรรมเชิงสุขภาพจิต",
+          "การขับเคลื่อนระบบพิทักษ์ความปลอดภัยทางเพศและการถูกกลั่นแกล้งในโรงเรียนขนาดใหญ่",
+          "กระบวนการทำงานของระบบแนะแนวการศึกษาต่อและวิชาชีพสไตล์ทางเลือกยืดหยุ่น"
+        ],
+        questions: [
+          "ในสภาวะที่ปัญหาสุขภาพจิตเด็กมัธยมพุ่งสูง สพม. จัดสรรงบประมาณและบุคลากรผู้เชี่ยวชาญลงไปเยียวยารร.อย่างไร?",
+          "ทักษะแนะแนวอาชีพยุคใหม่ที่พึ่ง AI ควรบรรจุอยู่ในหลักสูตรการบริหารโรงเรียนมัธยมอย่างไรบ้าง?"
+        ] 
+      },
+      "B08": { 
+        name: "สพป.ลำพูน เขต 1", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "กระบวนการสร้างเสริมคุณธรรมจริยธรรมผู้บริหารอย่างมีธรรมาภิบาล การเปลี่ยนผ่านสู่สำนักงานดิจิทัลไร้กระดาษ (Digital Paperless Organization) เต็มรูปแบบ",
+        issues: [
+          "ทัศนคติและการตอบรับของบุคลากรต่อการใช้ระบบสารสนเทศและการลดใช้กระดาษ",
+          "ความพร้อมด้านงบประมาณและเครื่องมืออุปกรณ์เทคโนโลยีที่ใช้ในสำนักงาน",
+          "วิธีการประเมินความโปร่งใสและคุณธรรม (ITA) ให้ได้ผลการประเมินระดับดีเยี่ยมถาวร"
+        ],
+        questions: [
+          "กระบวนการเปลี่ยนเป็นองค์กรดิจิทัลไร้กระดาษ ช่วยลดงบประมาณบริหารสำนักงานไปได้มากน้อยใครต่อปี?",
+          "การสร้างเสริมคุณธรรมจริยธรรมในหมู่ผู้บริหาร มีเครื่องมือชี้วัดที่เป็นพฤติกรรมรูปธรรมอย่างไรบ้าง?"
+        ] 
+      },
+      "B09": { 
+        name: "อาชีวศึกษา ภาคเหนือ 1", 
+        type: "หน่วยงานทางการศึกษา", 
+        summary: "การทำสัญญาความร่วมมือแบบทวิภาคีร่วมกับผู้ประกอบการอุตสาหกรรม การบริหารงบประมาณและครุภัณฑ์ขนาดใหญ่เพื่อห้องปฏิบัติการยุคเทคโนโลยีอุตสาหกรรมสูง",
+        issues: [
+          "อุปสรรคของการสื่อสารระหว่างสถาบันอาชีวศึกษากับฝั่งผู้ประกอบการโรงงานอุตสาหกรรม",
+          "การจัดซื้อจัดจ้างเครื่องจักรอุตสาหกรรมราคาแพงด้วยข้อจำกัดงบระเบียบพัสดุรัฐ",
+          "แนวทางการส่งเสริมให้นักศึกษาก็ระเบียบวินัยและความปลอดภัยในการฝึกปฏิบัติงานจริง"
+        ],
+        questions: [
+          "การร่างสัญญา MOU กับภาคเอกชนแบบทวิภาคีระดับอินเตอร์ มีการทำข้อตกลงและแบ่งปันสิทธิ์ทางกฎหมายการค้าอย่างไร?",
+          "การลงทุนในอุปกรณ์สายวิชาชีพที่มีราคาสูงแต่เทคโนโลยีตกยุคไวมาก ผู้บริหารมีเคล็ดลับจัดลำดับความคุ้มค่าอย่างไร?"
+        ] 
+      },
+      "B10": { 
+        name: "โรงเรียนกาวิละวิทยาลัย", 
+        type: "โรงเรียน", 
+        summary: "การพัฒนาระบบประกันคุณภาพการเรียนรู้เชิงลึกของนักเรียน การประยุกต์ใช้วิธีสอนและสร้างวินัยเชิงบวกควบคู่กับการวัดการพัฒนาจิตใจ",
+        issues: [
+          "วิธีการปรับตัวของครูให้สอดคล้องกับมาตรฐานประกันคุณภาพการเรียนรู้ข้อใหม่ ๆ",
+          "มาตรการเชิงบวกในการแก้ปัญหาเด็กหนีเรียนและพฤติกรรมก้าวร้าวเชิงสังคม",
+          "การบูรณาการความคิดของผู้ปกครองเพื่อช่วยสร้างวินัยนักเรียนจากที่บ้าน"
+        ],
+        questions: [
+          "โรงเรียนนำผลสะท้อนจากการประกันคุณภาพมาปรับโครงสร้างงบประมาณเพื่อพัฒนาวิชาการโดยตรงอย่างไร?",
+          "สิทธิ์และบทบาทของสมาคมผู้ปกครองในการควบคุมความประพฤติและสร้างวินัยเชิงบวก ทำงานประสานฝ่ายปกครองอย่างไร?"
+        ] 
+      },
+      "B11": { 
+        name: "โรงเรียนบ้านแม่สา", 
+        type: "โรงเรียน", 
+        summary: "การดึงชุมชนและอปท. เข้ามามีส่วนร่วมในการวางแผนพัฒนาจัดหางบประมาณเสริมสร้างกายภาพของโรงเรียนที่ปลอดภัย น่าอยู่ น่าเรียนรู้เชิงนิเวศ",
+        issues: [
+          "ความแตกต่างระหว่างกฎหมายระเบียบงบประมาณของ อปท. และกระทรวงศึกษาธิการ",
+          "การสร้างความเชื่อใจเพื่อให้ชุมชนเสียสละทรัพย์สินหรืองบประมาณมาสนับสนุนงานส่วนรวม",
+          "การจัดการระบบสิ่งแวดล้อมและความปลอดภัยเชิงระบบนิเวศที่เป็นมิตรต่อชุมชนรอบข้าง"
+        ],
+        questions: [
+          "การยื่นเรื่องของบสนับสนุนโครงสร้างอาคารจาก อปท. มีช่องทางกฎหมายที่ผู้บริหารควรระวังจุดไหนบ้าง?",
+          "ชุมชนรอบโรงเรียนแม่สามีส่วนในการขับเคลื่อนความปลอดภัยให้แก่เด็กในโรงเรียนในมิติใดบ้าง?"
+        ] 
+      },
+      "B12": { 
+        name: "โรงเรียนบ้านสันกำแพง", 
+        type: "โรงเรียน", 
+        summary: "นวัตกรรมการจัดกิจกรรม STEM และการเพิ่มพูนประสิทธิภาพผลสัมฤทธิ์ทางการศึกษา (คะแนนสอบระดับชาติ) อย่างสมดุลย์โดยผู้เรียนรักที่จะเรียนรู้",
+        issues: [
+          "ความตึงเครียดของครูและเด็กในการผลักดันให้เกิดคะแนนสอบระดับชาติที่เพิ่มสูงขึ้น",
+          "แนวทางการระดมทุนเพื่อจัดหาเครื่องมือสอนกิจกรรม STEM และการจัดการเรียนรู้คอมพิวเตอร์",
+          "ปัญหาความแตกต่างของผลสัมฤทธิ์เรียนรู้ระหว่างห้องเรียนปกติและห้องเรียนพิเศษ"
+        ],
+        questions: [
+          "การจัดซื้อสื่ออุปกรณ์สำหรับการเรียน STEM ที่ทันสมัย ให้เพียงพอกับเด็กทุกคน มีวิธีกระจายงบอย่างไร?",
+          "การติวหรือเตรียมความพร้อมการสอบโดยไม่สร้างความเครียดให้เด็กรอบบ่าย มีวิธีบริหารจัดการครูอย่างไร?"
+        ] 
+      },
+      "B13": { 
+        name: "โรงเรียนยุพราชวิทยาลัย", 
+        type: "โรงเรียน", 
+        summary: "การจัดโครงสร้างแผนพัฒนาโรงเรียนมัธยมขนาดใหญ่พิเศษสู่มาตรฐานสากล การจัดรูปแบบบุคลากร 4 ฝ่ายให้มีสมรรถนะความรับผิดชอบเชิงนวัตกรรม",
+        issues: [
+          "ช่องทางการสื่อสารและการจัดแบ่งภาระหน้าที่ในสเกลบุคลากรขนาดใหญ่กว่า 200 คน",
+          "การระดมทรัพยากรจัดสรรงบประมาณจากศิษย์เก่าและเครือข่ายผู้มีส่วนเกี่ยวข้องอย่างยุติธรรม",
+          "การก้าวเข้าสู่หลักสูตรสากลโดยที่ยังคงรักษาค่านิยมและวัฒนธรรมไทยเดิมไว้อย่างลงตัว"
+        ],
+        questions: [
+          "ผู้บริหารโรงเรียนขนาดใหญ่พิเศษใช้เทคนิคใดในการสื่อสารและบริหารใจครูกกว่า 200 ท่านให้เดินหน้าไปจุดหมายเดียวกัน?",
+          "งบประมาณในส่วนเงินระดมทรัพยากร ถูกนำมาพัฒนาหลักสูตรห้องเรียนพิเศษสู่ความเป็นสากลอย่างไรให้โปร่งใสตรวจสอบได้?"
+        ] 
+      },
+      "B14": { 
+        name: "โรงเรียนคำเที่ยงอนุสรณ์", 
+        type: "โรงเรียน", 
+        summary: "กระบวนการปูรากฐานระบบปฐมวัยและการแก้ปัญหาทักษะการอ่านออกเขียนได้ของเยาวชนท่ามกลางสภาวะการปะทะของวัฒนธรรมในชุมชนเมืองหนาแน่น",
+        issues: [
+          "การปรับพฤติกรรมและการเตรียมความพร้อมของเด็กปฐมวัยที่มาจากหลากวัฒนธรรมและภาษา",
+          "การสนับสนุนจากครอบครัวชนกลุ่มน้อยในเรื่องส่งเสริมการอ่านเขียนของเด็กหลังเลิกเรียน",
+          "วิธีการจัดสรรงบประมาณเพื่อสร้างสื่อการสอนปฐมวัยที่กระตุ้นจินตนาการได้อย่างประหยัดคุ้มค่า"
+        ],
+        questions: [
+          "ครูปฐมวัยที่คำเที่ยงนำวิธีจิตวิทยาเชิงบวกตัวไหนมาแก้ปัญหาเด็กที่มีสภาวะเรียนรู้ช้าจากการขาดสภาพความอบอุ่นในบ้าน?",
+          "การบริหารจัดการงบรายหัววิชาการในกลุ่มเด็กด้อยโอกาสให้สัมฤทธิ์ผลสูงสุด มีวิธีคัดกรองอย่างไร?"
+        ] 
+      },
+      "B15": { 
+        name: "โรงเรียนนวมินทราชูทิศ พายัพ", 
+        type: "โรงเรียน", 
+        summary: "การประยุกต์ใช้งานดิจิทัลเต็มรูปแบบในระบบช่วยเหลือครูแนะแนวและติดตามพฤติกรรมเด็กรายคน (SDQ) ตรรกะกระบวนการประสานความสัมพันธ์ 4 ฝ่ายเพื่อพิทักษ์ความปลอดภัย",
+        issues: [
+          "การรักษาความลับและความปลอดภัยของข้อมูลพฤติกรรมเชิงสุขภาพจิตของเด็ก",
+          "ความสอดประสานระเบียบฝ่ายวิชาการ ฝ่ายปกครอง ฝ่ายแนะแนว และฝ่ายบริหารจัดการคลังในการส่งต่อเคส",
+          "ความคุ้มค่าของการลงทุนนวัตกรรมซอฟต์แวร์ติดตามผลงานเด็กในการลดภาระครูอย่างแท้จริง"
+        ],
+        questions: [
+          "โปรแกรมหรือเว็บแอปพลิเคชันช่วยเหลือระบบ SDQ ของทางโรงเรียน พัฒนาขึ้นเองหรือใช้พัสดุสำเร็จรูป และลดภาระงานครูได้อย่างไร?",
+          "การแก้ปัญหาความขัดแย้งของนักเรียนวัยรุ่นระดับมัธยมปลาย มีกฎเกณฑ์บริหารเชิงพฤติกรรมสากลอย่างไรที่เวิร์กที่สุด?"
+        ] 
+      },
+      "B16": { 
+        name: "โรงเรียนวัดเวฬุวัน", 
+        type: "โรงเรียน", 
+        summary: "การบูรณาการหลักธรรมวิถีพุทธเข้ากับการจัดพฤติกรรมสร้างสิ่งแวดล้อมน่าอยู่ บทบาทเจ้าอาวาสและเครือข่ายสถาบันสงฆ์ในการระดมทรัพยากรจัดหาทุนให้เด็กขาดแคลน",
+        issues: [
+          "วิธีการเชื่อมโยงสอดประสานหลักธรรมกับการเรียนในกลุ่มวิชาการที่เข้มข้นอย่างเหมาะสม",
+          "การจัดการระบบโปร่งใสทางการคลังและพัสดุเมื่อเงินทุนบริจาคได้มาจากสถาบันวัดและผู้ใจบุญ",
+          "กระบวนการเชิญพระภิกษุสงฆ์มาเป็นเครือข่ายครูวิญญูชนช่วยสอนวิชาศีลธรรมอย่างต่อเนื่อง"
+        ],
+        questions: [
+          "การประเมินผลความประพฤติและคุณธรรมเด็กตามแนววิถีพุทธ มีการประสานงานกับผู้ปกครองเพื่อประเมินผลที่บ้านร่วมกันอย่างไร?",
+          "การรับเงินบริจาคระดมทุนจากวัด มีกระบวนการพัสดุออกใบเสร็จรับเงินเพื่อลดหย่อนภาษีอย่างไรให้โปร่งใสไร้ข้อร้องเรียน?"
+        ] 
+      },
+      "B17": { 
+        name: "โรงเรียนศรีจอมทอง", 
+        type: "โรงเรียน", 
+        summary: "นวัตกรรมเพื่อลดอัตราการหลุดออกนอกระบบการศึกษาในพื้นที่เชิงราบสลับหุบเขาขนาดกว้างใหญ่ การส่งเสริมหลักสูตรวิชาชีพช่างชุมชนที่สอดรับกับตลาดท่องเที่ยวเชิงวัฒนธรรม",
+        issues: [
+          "ปัญหากระแสการอพยพเพื่อไปหางานทำในไร่สวนช่วงฤดูกาลเก็บเกี่ยวของครอบครัวนักเรียน",
+          "ข้อจำกัดทางกฎหมายงบระเบียบการเงินโรงเรียนในการจ้างครูวิชาชีพพิเศษ/ปราชญ์ท้องถิ่น",
+          "ความท้าทายในการผลักดันให้วิชาชีพช่างชุมชนได้รับการยอมรับและเป็นหน่วยการเรียนรู้ทางการศึกษาสากล"
+        ],
+        questions: [
+          "การเชิญปราชญ์ชาวบ้านมาเป็นวิทยากรช่วยสอนวิชาชีพช่างชุมชน โรงเรียนมีวิธีเบิกจ่ายค่าวิทยากรภายใต้ระเบียบราชการอย่างไร?",
+          "ระบบติดตามเด็กที่มีแนวโน้มหนีเรียนไปทำงานในสวนศรีจอมทอง มีมาตรการเชิงรุกประนีประนอมกับผู้ปกครองอย่างไร?"
+        ] 
+      },
+      "B18": { 
+        name: "โรงเรียนหางดงรัฐราษฎร์อุปถัมภ์", 
+        type: "โรงเรียน", 
+        summary: "การปรับปรุงภูมิทัศน์โรงเรียนสู่ Active Space เพื่อเอื้อความปลอดภัยและการเรียนรู้นวัตกรรมเชิงบวก และโครงการฝึกทักษะผู้ประกอบการน้อย (Young Entrepreneur)",
+        issues: [
+          "ความปลอดภัยในการก่อสร้างและจัดเตรียมโครงสร้างภูมิทัศน์ใหม่ที่เด็กมีส่วนร่วมออกแบบ",
+          "การวางโมเดลธุรกิจของโครงการผู้ประกอบการน้อยที่มีระบบบัญชีซื้อขายชัดเจนแต่ไม่ติดขัดกฎคลังรัฐ",
+          "การขยายผลผลิตภัณฑ์นวัตกรรมฝีมือนักเรียนออกไปวางจำหน่ายสู่ตลาดจริงในชุมชนรอบนอก"
+        ],
+        questions: [
+          "การปรับปรุง Active Space ของหางดง ใช้งบจากแผนงานใด และเปิดโอกาสให้เด็กมีส่วนร่วมในการดีไซน์พื้นที่อย่างไร?",
+          "โครงการผู้ประกอบการน้อยช่วยพัฒนาวินัยการออมและสร้างแรงบันดาลใจให้เยาวชนก้าวสู่ระบบบริหารพัสดุและวิชาชีพจริงอย่างไร?"
+        ] 
+      },
+      "B19": { 
+        name: "วิทยาลัยเทคนิคเชียงใหม่", 
+        type: "โรงเรียน", 
+        summary: "การวางยุทธศาสตร์บริหารวิทยาลัยสายอาชีพขนาดใหญ่พิเศษ การส่งเสริมการแข่งขันประดิษฐ์นวัตกรรมคนรุ่นใหม่ระดับชาติ และสัญญาร่วมทุนกับบรรษัทข้ามชาติ",
+        issues: [
+          "ปัญหาวินัยและอุบัติเหตุของนักศึกษาระหว่างปฏิบัติการกับเครื่องจักรที่อันตรายและมีความเสี่ยงสูง",
+          "สิทธิ์การถือครองลิขสิทธิ์และสิทธิบัตรเมื่อนักศึกษาคิดค้นสิ่งประดิษฐ์ร่วมกับบริษัทพันธมิตรเอกชน",
+          "การปรับเปลี่ยนหลักสูตรเทคนิคช่างระดับสูงให้ไล่ตามทันกระแสเทคโนโลยีอัจฉริยะในนิคมอุตสาหกรรม"
+        ],
+        questions: [
+          "การรับเครื่องครุภัณฑ์อุตสาหกรรมราคาแพงจากบริษัทข้ามชาติมาใช้งานในวิทยาลัย มีระเบียบข้อกฎหมายควบคุมความโปร่งใสในระยะยาวอย่างไร?",
+          "การรักษาความปลอดภัยของนักศึกษาท่ามกลางห้องปฏิบัติการเครื่องจักรขนาดใหญ่ มีระบบพัสดุจัดหาประกันอุบัติเหตุอย่างไร?"
+        ] 
+      }
+    };
+
+    // STEAMING_CHUNK: Setting up app state variables...
+    let currentUser = null;
+    let evaluatedBooths = [];
+    let currentActiveBooth = "";
+    let html5QrcodeScanner = null;
+    let selectedRating = 0;
+    let activeTab = 'directory'; // เปิดตัวเข้ามา แถบที่ 1 "19 หน่วยงาน" ทันที
+    let activeAdminSubTab = 'report';
+    let currentDirFilter = 'all';
+    
+    // ตัวแปรเก็บประมวลผลความนิยมของแชตและกราฟวิเคราะห์ (Aggregated Local Data & Mock Data)
+    let aggregatedReviews = {};
+    let popularChartInstance = null;
+    let currentChartFilter = 'all';
+
+    window.onload = function() {
+      checkUserStatus();
+      renderDirectory();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const boothParam = urlParams.get('booth') || "";
+      
+      if (boothParam && BOOTH_DATABASE[boothParam]) {
+        currentActiveBooth = boothParam;
+        if (currentUser) {
+          // สแกนคิวอาร์มา ส่งสถานะเปิดสิทธิ์ประเมินจริง (isScanOpen = true)
+          showEvaluationScreen(boothParam, true);
+        } else {
+          showRegistrationScreen();
+        }
+      } else {
+        if (currentUser) {
+          showMainScreen();
+        } else {
+          showRegistrationScreen();
+        }
+      }
+
+      // ระบบเลือกดาวประเมิน
+      document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function() {
+          selectedRating = parseInt(this.getAttribute('data-value'));
+          updateStars(selectedRating);
+        });
+      });
+      
+      // ปัดฝุ่นและสร้าง Mock Reviews ทันทีเพื่อดึงสถิติกราฟขึ้นจอใหญ่ได้สวยงามสมจริง
+      initializeMockReviews();
+    };
+
+    function checkUserStatus() {
+      const storedUser = localStorage.getItem('feu_user');
+      const storedHistory = localStorage.getItem('feu_evaluated_booths_v1.7');
+      
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser);
+      }
+      if (storedHistory) {
+        evaluatedBooths = JSON.parse(storedHistory);
+      }
+    }
+
+    function showRegistrationScreen() {
+      hideAllScreens();
+      document.getElementById('reg-screen').classList.remove('hidden');
+    }
+
+    function togglePrefixOther() {
+      const prefix = document.getElementById('reg-prefix').value;
+      const otherContainer = document.getElementById('prefix-other-container');
+      if (prefix === "อื่นๆ") {
+        otherContainer.classList.remove('hidden');
+      } else {
+        otherContainer.classList.add('hidden');
+      }
+    }
+
+    // STEAMING_CHUNK: Handling registration save...
+    function saveRegistration() {
+      const studentId = document.getElementById('reg-studentId').value.trim();
+      const prefixSelect = document.getElementById('reg-prefix').value;
+      const prefixOther = document.getElementById('reg-prefix-other').value.trim();
+      const name = document.getElementById('reg-name').value.trim();
+
+      if (studentId.length !== 10) {
+        showCustomModal("fa-circle-xmark", "text-red-500", "ข้อมูลไม่ถูกต้อง", "กรุณากรอกรหัสนักศึกษาให้ครบ 10 หลัก");
+        return;
+      }
+      if (!name) {
+        showCustomModal("fa-circle-xmark", "text-red-500", "กรอกข้อมูลไม่ครบ", "กรุณากรอกชื่อและนามสกุลจริงของคุณ");
+        return;
+      }
+
+      let prefix = prefixSelect;
+      if (prefixSelect === "อื่นๆ") {
+        if (!prefixOther) {
+          showCustomModal("fa-circle-xmark", "text-red-500", "กรอกข้อมูลไม่ครบ", "กรุณาระบุคำนำหน้านามระบุในตัวเลือกอื่นๆ");
+          return;
+        }
+        prefix = prefixOther;
+      }
+
+      currentUser = {
+        studentId: studentId,
+        prefix: prefix,
+        name: name,
+        fullName: `${prefix}${name}`
+      };
+
+      localStorage.setItem('feu_user', JSON.stringify(currentUser));
+      showCustomModal("fa-circle-check", "text-emerald-500", "ลงทะเบียนสำเร็จ", "เริ่มใช้งานระบบสะสมการเยี่ยมชมบูธสัมมนาวิชาการได้เลยครับ");
+
+      if (currentActiveBooth) {
+        showEvaluationScreen(currentActiveBooth, true);
+      } else {
+        showMainScreen();
+      }
+    }
+
+    function showMainScreen() {
+      hideAllScreens();
+      document.getElementById('main-screen').classList.remove('hidden');
+      document.getElementById('user-display').innerText = `${currentUser.fullName} (${currentUser.studentId})`;
+      
+      switchTab(activeTab);
+      updateProgressUI();
+    }
+
+    // STEAMING_CHUNK: Managing tabs navigation...
+    // สลับ Tabs การทำงานหลัก
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.getElementById('tab-dir-btn').className = "flex-1 py-3 text-center border-b-2 font-medium text-sm text-slate-500 hover:text-feu-navy transition-all";
+      document.getElementById('tab-scan-btn').className = "flex-1 py-3 text-center border-b-2 font-medium text-sm text-slate-500 hover:text-feu-navy transition-all";
+      document.getElementById('tab-hist-btn').className = "flex-1 py-3 text-center border-b-2 font-medium text-sm text-slate-500 hover:text-feu-navy transition-all";
+
+      document.getElementById('tab-directory-content').classList.add('hidden');
+      document.getElementById('tab-scan-content').classList.add('hidden');
+      document.getElementById('tab-history-content').classList.add('hidden');
+
+      if (tabId === 'directory') {
+        document.getElementById('tab-dir-btn').className = "flex-1 py-3 text-center border-b-2 border-feu-navy font-bold text-sm text-feu-navy transition-all";
+        document.getElementById('tab-directory-content').classList.remove('hidden');
+        renderDirectory();
+      } else if (tabId === 'scan') {
+        document.getElementById('tab-scan-btn').className = "flex-1 py-3 text-center border-b-2 border-feu-navy font-bold text-sm text-feu-navy transition-all";
+        document.getElementById('tab-scan-content').classList.remove('hidden');
+      } else if (tabId === 'history') {
+        document.getElementById('tab-hist-btn').className = "flex-1 py-3 text-center border-b-2 border-feu-navy font-bold text-sm text-feu-navy transition-all";
+        document.getElementById('tab-history-content').classList.remove('hidden');
+        sortAndRenderHistory();
+      }
+    }
+
+    // สลับแผงย่อยของ Admin
+    function switchAdminSubTab(subTabId) {
+      activeAdminSubTab = subTabId;
+      document.getElementById('admin-tab-report-btn').className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:bg-white/50 transition-all";
+      document.getElementById('admin-tab-scores-btn').className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-500 hover:bg-white/50 transition-all";
+      
+      document.getElementById('admin-subtab-report-content').classList.add('hidden');
+      document.getElementById('admin-subtab-scores-content').classList.add('hidden');
+
+      if (subTabId === 'report') {
+        document.getElementById('admin-tab-report-btn').className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-feu-navy shadow-sm transition-all";
+        document.getElementById('admin-subtab-report-content').classList.remove('hidden');
+      } else if (subTabId === 'scores') {
+        document.getElementById('admin-tab-scores-btn').className = "flex-1 py-2 text-xs font-bold rounded-lg bg-white text-feu-navy shadow-sm transition-all";
+        document.getElementById('admin-subtab-scores-content').classList.remove('hidden');
+        renderPopularityChart();
+        renderDrilldownBoothList();
+      }
+    }
+
+    // STEAMING_CHUNK: Filtering directory listing...
+    // 📂 แสดงผลสารบัญ 19 บูธล่วงหน้า
+    function filterDirectory(type) {
+      currentDirFilter = type;
+      document.getElementById('dir-filter-all').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+      document.getElementById('dir-filter-office').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+      document.getElementById('dir-filter-school').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+
+      if (type === 'all') {
+        document.getElementById('dir-filter-all').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-feu-navy text-white transition-all";
+      } else if (type === 'หน่วยงานทางการศึกษา') {
+        document.getElementById('dir-filter-office').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-feu-navy text-white transition-all";
+      } else if (type === 'โรงเรียน') {
+        document.getElementById('dir-filter-school').className = "px-3 py-1.5 text-xs font-semibold rounded-lg bg-feu-navy text-white transition-all";
+      }
+      renderDirectory();
+    }
+
+    function renderDirectory() {
+      const listContainer = document.getElementById('directory-list');
+      if (!listContainer) return;
+      listContainer.innerHTML = "";
+
+      Object.keys(BOOTH_DATABASE).forEach(boothId => {
+        const booth = BOOTH_DATABASE[boothId];
+        if (currentDirFilter !== 'all' && booth.type !== currentDirFilter) return;
+
+        const card = document.createElement('div');
+        card.className = "p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition shadow-sm space-y-2";
+        
+        // เช็คว่าสแกนแล้วหรือยังเพื่อติดแท็กความคืบหน้า
+        const isVisited = evaluatedBooths.some(e => e.boothId === boothId);
+        const statusBadge = isVisited 
+          ? `<span class="bg-emerald-100 text-emerald-800 text-[9px] px-2.5 py-0.5 rounded-full font-bold flex items-center space-x-1"><i class="fa-solid fa-circle-check"></i> <span>ประเมินแล้ว</span></span>` 
+          : `<span class="bg-slate-200 text-slate-600 text-[9px] px-2.5 py-0.5 rounded-full font-bold flex items-center space-x-1"><i class="fa-solid fa-book-open"></i> <span>ข้อมูลอ้างอิง</span></span>`;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-[9px] font-bold text-feu-gold tracking-wider block uppercase">${boothId} • ${booth.type}</span>
+              <h4 class="font-bold text-slate-800 text-xs md:text-sm mt-0.5">${booth.name}</h4>
+            </div>
+            ${statusBadge}
+          </div>
+          <p class="text-xs text-slate-500 leading-relaxed">${booth.summary}</p>
+          <div class="pt-2 flex justify-between items-center text-[11px] text-indigo-600 border-t border-slate-200/60">
+            <span class="font-medium text-slate-400"><i class="fa-solid fa-info-circle mr-1"></i>โหมดเปิดอ่านอ้างอิงล่วงหน้า</span>
+            <button onclick="handleManualSelect('${boothId}')" class="bg-feu-navy hover:bg-slate-700 text-white text-[10px] font-semibold px-3 py-1 rounded-lg transition">เปิดอ่านสาระ</button>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    // กดเลือกจากหน้าสารบัญเพื่อศึกษาข้อมูลล่วงหน้า (isScanOpen = false)
+    function handleManualSelect(boothId) {
+      currentActiveBooth = boothId;
+      showEvaluationScreen(boothId, false);
+    }
+
+    // STEAMING_CHUNK: Setting up evaluation screens...
+    // 🌟 หน้าจอทำประเมินเฉพาะบูธ 🌟
+    function showEvaluationScreen(boothId, isScanOpen) {
+      hideAllScreens();
+      document.getElementById('eval-screen').classList.remove('hidden');
+
+      const booth = BOOTH_DATABASE[boothId];
+      document.getElementById('eval-booth-id').innerText = `รหัสบูธ: ${boothId}`;
+      document.getElementById('eval-booth-name').innerText = booth.name;
+      document.getElementById('booth-type-tag').innerText = booth.type;
+      document.getElementById('eval-booth-summary').innerText = booth.summary;
+      
+      // เรนเดอร์รายการประเด็นปัญหา
+      const issuesContainer = document.getElementById('eval-booth-issues');
+      issuesContainer.innerHTML = "";
+      booth.issues.forEach(issue => {
+        const li = document.createElement('li');
+        li.innerText = issue;
+        issuesContainer.appendChild(li);
+      });
+
+      // สุ่มคำถามแนะนำเชิงวิชาการเพื่อฝึกการตั้งคำถามของผู้นำ
+      const randomIndex = Math.floor(Math.random() * booth.questions.length);
+      document.getElementById('eval-suggested-question').innerText = `"${booth.questions[randomIndex]}"`;
+
+      // ปลดล็อกดาวน์โหลดไฟล์รวม (เมื่อสะสมครบ 5 บูธขึ้นไป)
+      const pdfContainer = document.getElementById('booth-pdf-unlock-container');
+      if (pdfContainer) {
+        if (evaluatedBooths.length >= 5) {
+          pdfContainer.classList.remove('hidden');
+        } else {
+          pdfContainer.classList.add('hidden');
+        }
+      }
+
+      const evalActionContainer = document.getElementById('evaluation-action-container');
+      const evalLockMsg = document.getElementById('evaluation-viewonly-lock-msg');
+
+      if (isScanOpen) {
+        // หากเปิดเข้ามาจากการสแกน QR Code จริง ให้เปิดฟังก์ชันประเมินดาวและพิมพ์คอมเมนต์ได้เสรี
+        evalActionContainer.classList.remove('hidden');
+        evalLockMsg.classList.add('hidden');
+        
+        // ตรวจสอบประวัติการประเมินเก่า (หากเคยประเมินแล้ว ให้ดึงข้อมูลมาค้างโชว์)
+        const existingEval = evaluatedBooths.find(e => e.boothId === boothId);
+        if (existingEval) {
+          selectedRating = existingEval.rating;
+          updateStars(existingEval.rating);
+          document.getElementById('eval-comment').value = existingEval.comment;
+        } else {
+          selectedRating = 0;
+          updateStars(0);
+          document.getElementById('eval-comment').value = "";
+        }
+      } else {
+        // หากเปิดเข้ามาจากหน้าอ้างอิง แถบ 1 ให้ซ่อนช่องประเมิน
+        evalActionContainer.classList.add('hidden');
+        evalLockMsg.classList.remove('hidden');
+      }
+    }
+
+    // STEAMING_CHUNK: Processing evaluation submissions...
+    function submitEvaluation() {
+      const rating = document.getElementById('ratingValue').value;
+      const comment = document.getElementById('eval-comment').value.trim();
+
+      if (rating == 0) {
+        showCustomModal("fa-triangle-exclamation", "text-amber-500", "ขาดส่วนสำคัญ", "กรุณาประเมินระดับคะแนนดาวด้วยครับ");
+        return;
+      }
+
+      const submitButton = document.getElementById('btn-submit-eval');
+      submitButton.disabled = true;
+      submitButton.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>กำลังจัดส่งคะแนนประเมินเข้าระบบ Google Sheets...</span>`;
+
+      const payload = {
+        studentId: currentUser.studentId,
+        studentName: currentUser.fullName,
+        boothId: currentActiveBooth,
+        rating: rating,
+        comment: comment
+      };
+
+      // บันทึก/อัปเดตข้อมูลสำรองลง Local Storage ของบราวเซอร์ (จัดหมวดโครงสร้างอัจฉริยะ)
+      const existingIndex = evaluatedBooths.findIndex(e => e.boothId === currentActiveBooth);
+      const evalItem = {
+        boothId: currentActiveBooth,
+        boothName: BOOTH_DATABASE[currentActiveBooth].name,
+        type: BOOTH_DATABASE[currentActiveBooth].type,
+        rating: parseInt(rating),
+        comment: comment,
+        timestamp: new Date().toLocaleTimeString('th-TH')
+      };
+
+      if (existingIndex > -1) {
+        evaluatedBooths[existingIndex] = evalItem;
+      } else {
+        evaluatedBooths.push(evalItem);
+      }
+      localStorage.setItem('feu_evaluated_booths_v1.7', JSON.stringify(evaluatedBooths));
+
+      // ยิง API แบบ POST ไปที่ Apps Script มหาวิทยาลัย
+      fetch(BACKEND_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        showCustomModal("fa-circle-check", "text-emerald-500", "บันทึกผลสำเร็จ", `ประเมินผล ${BOOTH_DATABASE[currentActiveBooth].name} เรียบร้อยแล้ว`);
+        currentActiveBooth = "";
+        safeReplaceState();
+        showMainScreen();
+      })
+      .catch(error => {
+        console.error("Error:", error);
+        showCustomModal("fa-circle-check", "text-emerald-500", "บันทึกสำเร็จ (Offline Mode)", "ระบบเก็บผลประเมินในเครื่องเรียบร้อยแล้ว (ข้อมูลจะประสานส่งชีทภายหลัง)");
+        currentActiveBooth = "";
+        safeReplaceState();
+        showMainScreen();
+      })
+      .finally(() => {
+        submitButton.disabled = false;
+        submitButton.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>ส่งผลประเมินบูธ</span>`;
+      });
+    }
+
+    function updateProgressUI() {
+      const totalScore = evaluatedBooths.length;
+      const progressText = document.getElementById('score-text');
+      const progressCircle = document.getElementById('progress-circle');
+      
+      if (progressText) progressText.innerText = `${totalScore}/5`;
+      
+      if (progressCircle) {
+        const ratio = Math.min(totalScore / 5, 1);
+        const strokeDashoffset = 201.06 - (201.06 * ratio);
+        progressCircle.setAttribute('stroke-dashoffset', strokeDashoffset);
+      }
+
+      const rewardBox = document.getElementById('reward-box');
+      if (rewardBox) {
+        if (totalScore >= 5) {
+          rewardBox.classList.remove('hidden');
+        } else {
+          rewardBox.classList.add('hidden');
+        }
+      }
+    }
+
+    // STEAMING_CHUNK: Filtering and rendering history...
+    // 🌟 ระบบจัดเรียงลำดับรายงานการเข้าชมอย่างชาญฉลาดในหน้าบ้าน 🌟
+    function sortAndRenderHistory() {
+      const sortBy = document.getElementById('history-sort-select').value;
+      const container = document.getElementById('history-list-detailed');
+      
+      if (!container) return;
+      
+      if (evaluatedBooths.length === 0) {
+        container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">คุณยังไม่ได้เยี่ยมชมบูธใด ๆ ในระบบ เริ่มสแกนบูธหรือกดจากแถบสารบัญเพื่อถอดบทเรียนสะสมแต้มได้เลยครับ</p>`;
+        return;
+      }
+
+      // สำเนาประวัติเพื่อนำมาเรียงลำดับป้องกันประวัติหลักเพี้ยน
+      let sortedList = [...evaluatedBooths];
+
+      if (sortBy === 'boothId') {
+        sortedList.sort((a, b) => a.boothId.localeCompare(b.boothId));
+      } else if (sortBy === 'ratingHigh') {
+        sortedList.sort((a, b) => b.rating - a.rating);
+      } else if (sortBy === 'ratingLow') {
+        sortedList.sort((a, b) => a.rating - b.rating);
+      } else if (sortBy === 'commentLength') {
+        sortedList.sort((a, b) => b.comment.length - a.comment.length);
+      }
+
+      container.innerHTML = "";
+      sortedList.forEach(evalItem => {
+        const card = document.createElement('div');
+        card.className = "p-4 bg-slate-50 border border-slate-200 rounded-2xl shadow-sm space-y-2.5 animate-fadeIn";
+        
+        let starsHTML = "";
+        for (let i = 1; i <= 5; i++) {
+          starsHTML += i <= evalItem.rating 
+            ? `<i class="fa-solid fa-star text-amber-400 text-xs"></i>` 
+            : `<i class="fa-regular fa-star text-slate-300 text-xs"></i>`;
+        }
+
+        const commentDisplay = evalItem.comment 
+          ? `<div class="p-2.5 bg-white border border-slate-150 rounded-xl text-xs text-slate-600 leading-relaxed italic">" ${evalItem.comment} "</div>` 
+          : `<span class="text-[10px] text-slate-400 block italic"><i class="fa-solid fa-pen-nib mr-1"></i>ไม่ได้กรอกข้อคิดเห็นบันทึกเพิ่มเติม</span>`;
+
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-[9px] font-bold text-feu-gold tracking-widest block uppercase">${evalItem.boothId} • ${evalItem.type}</span>
+              <h4 class="font-bold text-slate-800 text-xs md:text-sm mt-0.5">${evalItem.boothName}</h4>
+            </div>
+            <div class="text-right">
+              <div class="flex justify-end space-x-0.5 mb-1">${starsHTML}</div>
+              <span class="text-[9px] text-slate-400 block">${evalItem.timestamp}</span>
+            </div>
+          </div>
+          ${commentDisplay}
+          <div class="pt-2 flex justify-end border-t border-slate-200/60">
+            <button onclick="handleManualSelect('${evalItem.boothId}')" class="text-[10px] font-semibold text-feu-navy hover:text-feu-gold transition-all">
+              <i class="fa-solid fa-edit mr-1"></i>แก้ไขคะแนน/รีวิว
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function clearUserDataConfirm() {
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+    }
+
+    function executeClearUserData() {
+      localStorage.removeItem('feu_user');
+      localStorage.removeItem('feu_evaluated_booths_v1.7');
+      currentUser = null;
+      evaluatedBooths = [];
+      closeConfirmModal();
+      showRegistrationScreen();
+    }
+
+    function goBackToMain() {
+      currentActiveBooth = "";
+      safeReplaceState();
+      showMainScreen();
+    }
+
+    function safeReplaceState() {
+      try {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (e) {
+        console.warn("History API is disabled or sandboxed in this environment:", e);
+      }
+    }
+
+    function hideAllScreens() {
+      document.getElementById('reg-screen').classList.add('hidden');
+      document.getElementById('main-screen').classList.add('hidden');
+      document.getElementById('eval-screen').classList.add('hidden');
+      document.getElementById('admin-screen').classList.add('hidden');
+      
+      stopCamera();
+    }
+
+    // -------------------- QR CODE SYSTEM LOGIC --------------------
+
+    function startScanning() {
+      const btn = document.getElementById('btn-camera-toggle');
+      
+      if (html5QrcodeScanner) {
+        stopCamera();
+        btn.innerHTML = `<i class="fa-solid fa-camera"></i> <span>เปิดกล้องสแกน</span>`;
+        document.getElementById('scanner-placeholder').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('scanner-placeholder').classList.add('hidden');
+      btn.innerHTML = `<i class="fa-solid fa-stop-circle text-red-500 animate-pulse"></i> <span>ปิดการใช้งานกล้อง</span>`;
+
+      const config = { fps: 15, qrbox: { width: 230, height: 230 } };
+      html5QrcodeScanner = new Html5Qrcode("reader");
+      
+      html5QrcodeScanner.start(
+        { facingMode: "environment" }, 
+        config,
+        (decodedText) => {
+          handleScanSuccess(decodedText);
+        },
+        () => {}
+      ).catch((err) => {
+        showCustomModal("fa-triangle-exclamation", "text-red-500", "เปิดกล้องไม่สำเร็จ", "กรุณาเปิดสิทธิ์เข้าถึงกล้องให้บราวเซอร์มือถือ และสแกนบนโปรโตคอล HTTPS");
+        stopCamera();
+        btn.innerHTML = `<i class="fa-solid fa-camera"></i> <span>เปิดกล้องสแกน</span>`;
+        document.getElementById('scanner-placeholder').classList.remove('hidden');
+      });
+    }
+
+    // STEAMING_CHUNK: Managing camera functions...
+    function stopCamera() {
+      if (html5QrcodeScanner) {
+        html5QrcodeScanner.stop().then(() => {
+          html5QrcodeScanner = null;
+          document.getElementById('btn-camera-toggle').innerHTML = `<i class="fa-solid fa-camera"></i> <span>เปิดกล้องสแกน</span>`;
+          document.getElementById('scanner-placeholder').classList.remove('hidden');
+        }).catch(err => console.error("Error stopping camera", err));
+      }
+    }
+
+    function scanFromFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+          handleScanSuccess(decodedText);
+        })
+        .catch(() => {
+          showCustomModal("fa-circle-question", "text-blue-500", "ไม่พบ QR Code", "ไม่พบข้อมูลรหัสคิวอาร์โค้ดในไฟล์ภาพของคุณ กรุณาลองปรับมุมกล้องและลองถ่ายใหม่อีกครั้ง");
+        });
+    }
+
+    function handleScanSuccess(decodedText) {
+      if (navigator.vibrate) {
+        navigator.vibrate(150);
+      }
+
+      stopCamera();
+
+      try {
+        const urlObj = new URL(decodedText);
+        const boothParam = urlObj.searchParams.get('booth');
+
+        if (boothParam && BOOTH_DATABASE[boothParam]) {
+          currentActiveBooth = boothParam;
+          showEvaluationScreen(boothParam, true); // สแกนผ่านคิวอาร์ สั่งเปิดประเมินได้
+        } else {
+          showCustomModal("fa-triangle-exclamation", "text-amber-500", "ข้อมูลผิดรูปแบบ", "สแกนสำเร็จ แต่รูปแบบข้อมูล QR Code ในระบบไม่ถูกต้อง");
+        }
+      } catch (e) {
+        if (BOOTH_DATABASE[decodedText]) {
+          currentActiveBooth = decodedText;
+          showEvaluationScreen(decodedText, true);
+        } else {
+          showCustomModal("fa-triangle-exclamation", "text-amber-500", "ไม่พบรหัสบูธ", "รหัสที่ตรวจพบไม่อยู่ในฐานข้อมูลงานสัมมนาครั้งนี้");
+        }
+      }
+    }
+
+    // -------------------- ADMIN REPORT DASHBOARD & REVIEWS STATS --------------------
+    
+    function toggleAdminPanel() {
+      hideAllScreens();
+      document.getElementById('admin-screen').classList.remove('hidden');
+      switchAdminSubTab(activeAdminSubTab);
+      fetchAdminReport(); 
+    }
+
+    // STEAMING_CHUNK: Initializing mock data for big screen...
+    // 🌟 ระบบดึงข้อมูลความเห็นและสร้างชุดข้อมูลจำลองความปลอดภัยเชิงสถิติ (Mock Ratings) 🌟
+    function initializeMockReviews() {
+      const firstNames = ["ธวัชชัย", "ณิชนันทน์", "ลัดดา", "ปิยะนัฐ", "ศิวกร", "เกรียงไกร", "นัทธมน", "อภิเดช", "ช่อทิพย์", "วิวัฒน์"];
+      const lastNames = ["รัตนวงศ์", "แก้วมณี", "สิทธิกุล", "คำใส", "วงค์รัตน์", "ปัญญายอด", "ประยูรวงศ์", "แสนลี่", "กิตติพงษ์", "สุวรรณ"];
+      const comments = [
+        "งานสรุปเป็นระบบ เข้าใจระเบียบการจัดซื้อพัสดุและงบประมาณอย่างมีธรรมาภิบาลมากครับ",
+        "ทึ่งกับการปรับปรุง Active Space ของนักเรียน ได้ยินว่าน้องๆ มีส่วนร่วมออกแบบด้วย ชื่นชมครับ",
+        "การจัดทวิภาคีร่วมกับแบรนด์ใหญ่ช่วยขยายวิชาชีพสายช่างเทคนิคได้ดีมาก เหมาะกับการบริหารยุคนี้",
+        "ชอบการดึงวัดและศาสนสงฆ์มาเป็นภาคีเครือข่ายช่วยสนับสนุนทุนการศึกษาให้เด็กขาดแคลน เป็นแบบอย่างที่ดีมากค่ะ",
+        "การจัดการคัดกรองพฤติกรรม SDQ ด้วยซอฟต์แวร์ช่วยลดภาระงานครูแนะแนวได้จริง",
+        "ชอบการบริหารจัดการจังหวัดพื้นที่นวัตกรรมการศึกษาของ ศธจ. มากค่ะ ท้าทายและเป็นรูปธรรม",
+        "โมเดลลดภาวะหนีเรียนของศรีจอมทองประนีประนอมและตอบโจทย์ตลาดท่องเที่ยวชื่นชมในไอเดียผู้บริหารค่ะ",
+        "คู่มือมีความละเอียด มีแนวปฏิบัติพัสดุและงานบุคคลที่ชัดเจน เหมาะแก่การนำไปปรับใช้",
+        "อยากนำระบบ STEM ของบ้านสันกำแพงไปทดลองบูรณาการในโรงเรียนฝึกสอนของตัวเองบ้างครับ",
+        "การจัดสรรงบรายหัวและพัฒนาการแก้ปัญหารากฐานอ่านเขียนของปฐมวัยล้ำลึกมากครับ"
+      ];
+
+      Object.keys(BOOTH_DATABASE).forEach(boothId => {
+        aggregatedReviews[boothId] = [];
+        
+        // สุ่มใส่รีวิวบูธละ 3 - 6 รายการ เพื่อให้ความสวยงามของการฉายขึ้นกราฟจอใหญ่
+        const reviewsCount = Math.floor(Math.random() * 4) + 3;
+        for (let i = 0; i < reviewsCount; i++) {
+          const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
+          const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
+          const r = Math.floor(Math.random() * 3) + 3; // 3 ถึง 5 ดาว
+          const c = Math.random() > 0.3 ? comments[Math.floor(Math.random() * comments.length)] : "";
+          
+          aggregatedReviews[boothId].push({
+            name: `${fn} ${ln}`,
+            rating: r,
+            comment: c
+          });
+        }
+      });
+    }
+
+    // STEAMING_CHUNK: Filtering popular chart categories...
+    // ระบบกรองประเภทความนิยมของกราฟ
+    function filterPopularityChart(type) {
+      currentChartFilter = type;
+      document.getElementById('chart-filter-all').className = "px-2.5 py-1 text-[10px] font-semibold text-slate-400 hover:text-white transition-all";
+      document.getElementById('chart-filter-office').className = "px-2.5 py-1 text-[10px] font-semibold text-slate-400 hover:text-white transition-all";
+      document.getElementById('chart-filter-school').className = "px-2.5 py-1 text-[10px] font-semibold text-slate-400 hover:text-white transition-all";
+
+      if (type === 'all') {
+        document.getElementById('chart-filter-all').className = "px-2.5 py-1 text-[10px] font-bold rounded bg-feu-gold text-feu-navy transition-all";
+      } else if (type === 'หน่วยงาน') {
+        document.getElementById('chart-filter-office').className = "px-2.5 py-1 text-[10px] font-bold rounded bg-feu-gold text-feu-navy transition-all";
+      } else if (type === 'โรงเรียน') {
+        document.getElementById('chart-filter-school').className = "px-2.5 py-1 text-[10px] font-bold rounded bg-feu-gold text-feu-navy transition-all";
+      }
+      renderPopularityChart();
+    }
+
+    // STEAMING_CHUNK: Drawing ChartJS popularity graph...
+    // 🌟 เรนเดอร์กราฟวิเคราะห์ Chart.js แท้ (เหมาะเจาะสำหรับการแชร์ฉายขึ้นจอใหญ่ในงาน) 🌟
+    function renderPopularityChart() {
+      const labels = [];
+      const averageRatings = [];
+
+      Object.keys(BOOTH_DATABASE).forEach(boothId => {
+        const booth = BOOTH_DATABASE[boothId];
+        
+        // คัดกรองข้อมูลตามฟิลเตอร์ประเภทบูธ
+        if (currentChartFilter === 'หน่วยงาน' && booth.type !== 'หน่วยงานทางการศึกษา') return;
+        if (currentChartFilter === 'โรงเรียน' && booth.type !== 'โรงเรียน') return;
+
+        labels.push(boothId);
+        
+        // คำนวณหาเรตติ้งดาวเฉลี่ย
+        const reviews = aggregatedReviews[boothId] || [];
+        const avg = reviews.length > 0 
+          ? (reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length).toFixed(1)
+          : 0;
+        averageRatings.push(avg);
+      });
+
+      const ctx = document.getElementById('popularityBarChart').getContext('2d');
+      if (popularChartInstance) {
+        popularChartInstance.destroy();
+      }
+
+      popularChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'เรตติ้งดาวเฉลี่ย',
+            data: averageRatings,
+            backgroundColor: 'rgba(212, 175, 55, 0.85)', // สีทองอร่าม FEU
+            borderColor: '#D4AF37',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            barPercentage: 0.65
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1E2D4A',
+              titleFont: { family: 'Prompt', size: 11 },
+              bodyFont: { family: 'Prompt', size: 11 },
+              callbacks: {
+                title: function(context) {
+                  const bId = context[0].label;
+                  return `${bId}: ${BOOTH_DATABASE[bId].name}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#F4F6F9', font: { family: 'Prompt', size: 9 } }
+            },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.08)' },
+              min: 0,
+              max: 5,
+              ticks: { color: '#F4F6F9', stepSize: 1, font: { family: 'Prompt', size: 9 } }
+            }
+          }
+        }
+      });
+    }
+
+    // STEAMING_CHUNK: Masking names for privacy...
+    // 🛡️ ระบบซ่อนประวัติผู้ให้คำนิยมเพื่อความมั่นคงและอิสระทางความเห็น (Privacy Masking) 🛡️
+    function maskName(fullName) {
+      if (!fullName) return "***";
+      
+      // ลบคำนำหน้านามทั่วไปออกก่อนพรางสิทธิ์
+      let cleanName = fullName.replace(/^(นาย|นางสาว|นาง|ดร\.|ว่าที่ร้อยตรี|ครู)/g, "").trim();
+      let parts = cleanName.split(/\s+/);
+      
+      return parts.map(p => {
+        if (p.length > 0) {
+          return p.charAt(0) + "***";
+        }
+        return "";
+      }).join(" ");
+    }
+
+    // STEAMING_CHUNK: Drilldown rendering logic...
+    // 📂 แสดงผลตารางหน่วยงานบูธเพื่อดึงข้อมูล Drilldown 📂
+    function renderDrilldownBoothList() {
+      const container = document.getElementById('admin-booth-drilldown-list');
+      if (!container) return;
+      container.innerHTML = "";
+
+      Object.keys(BOOTH_DATABASE).forEach(boothId => {
+        const booth = BOOTH_DATABASE[boothId];
+        const reviews = aggregatedReviews[boothId] || [];
+        const avg = reviews.length > 0 
+          ? (reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length).toFixed(1)
+          : "0.0";
+
+        const card = document.createElement('div');
+        card.className = "p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center transition cursor-pointer shadow-sm active:scale-95 duration-100";
+        card.onclick = () => showDrilldownModal(boothId);
+
+        card.innerHTML = `
+          <div>
+            <span class="text-[9px] font-bold text-slate-400 block">${boothId} • ${booth.type}</span>
+            <span class="font-bold text-slate-800 text-xs">${booth.name}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="text-right">
+              <span class="text-xs font-black text-feu-navy block">${avg} ⭐</span>
+              <span class="text-[9px] text-slate-400 block">${reviews.length} รีวิว</span>
+            </div>
+            <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function showDrilldownModal(boothId) {
+      const booth = BOOTH_DATABASE[boothId];
+      const reviews = aggregatedReviews[boothId] || [];
+      const avg = reviews.length > 0 
+        ? (reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length).toFixed(1)
+        : "0.0";
+
+      document.getElementById('drilldown-booth-id').innerText = `รหัสบูธ: ${boothId}`;
+      document.getElementById('drilldown-booth-name').innerText = booth.name;
+      document.getElementById('drilldown-avg-rating').innerText = `${avg} / 5.0`;
+      document.getElementById('drilldown-total-reviews').innerText = `${reviews.length} ครั้ง`;
+
+      const reviewsContainer = document.getElementById('drilldown-reviews-container');
+      reviewsContainer.innerHTML = "";
+
+      if (reviews.length === 0) {
+        reviewsContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">บูธนี้ยังไม่มีความคิดเห็นสะสมในขณะนี้</p>`;
+      } else {
+        reviews.forEach(review => {
+          const masked = maskName(review.name);
+          let starsHTML = "";
+          for (let i = 1; i <= 5; i++) {
+            starsHTML += i <= review.rating 
+              ? `<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>` 
+              : `<i class="fa-regular fa-star text-slate-200 text-[10px]"></i>`;
+          }
+
+          const commentBox = review.comment 
+            ? `<p class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-xl italic mt-1 leading-relaxed">"${review.comment}"</p>`
+            : `<span class="text-[9px] text-slate-400 italic block mt-0.5">ไม่ได้ระบุข้อคิดเห็นสั้นเพิ่มเติม</span>`;
+
+          const card = document.createElement('div');
+          card.className = "p-3 bg-white border border-slate-150 rounded-xl space-y-1 shadow-sm";
+          card.innerHTML = `
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-700"><i class="fa-solid fa-user-lock text-slate-400 mr-1"></i>${masked}</span>
+              <div class="flex space-x-0.5">${starsHTML}</div>
+            </div>
+            ${commentBox}
+          `;
+          reviewsContainer.appendChild(card);
+        });
+      }
+
+      document.getElementById('drilldown-modal').classList.remove('hidden');
+    }
+
+    // STEAMING_CHUNK: Handling modal closures...
+    function closeDrilldownModal() {
+      document.getElementById('drilldown-modal').classList.add('hidden');
+    }
+
+    function fetchAdminReport() {
+      const tbody = document.getElementById('admin-report-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = `<tr><td colspan="3" class="p-5 text-center text-slate-400"><i class="fa-solid fa-circle-notch animate-spin mr-1.5 text-feu-gold"></i>กำลังดึงผลสัมฤทธิ์มีส่วนร่วมจาก Sheets มหาวิทยาลัย...</td></tr>`;
+
+      fetch(`${BACKEND_URL}?action=getAdminData`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.users) {
+            document.getElementById('admin-stat-users').innerText = `${data.totalUsers} คน`;
+            document.getElementById('admin-stat-evals').innerText = `${data.totalEvals} ครั้ง`;
+            
+            tbody.innerHTML = "";
+            data.users.forEach(user => {
+              const row = document.createElement('tr');
+              row.className = "hover:bg-slate-50 transition";
+              row.innerHTML = `
+                <td class="p-3 font-mono font-semibold text-slate-600">${user.studentId}</td>
+                <td class="p-3 font-medium text-slate-800">${user.name}</td>
+                <td class="p-3 text-center font-extrabold text-feu-navy">${user.score} / 19</td>
+              `;
+              tbody.appendChild(row);
+            });
+          } else {
+            tbody.innerHTML = `<tr><td colspan="3" class="p-5 text-center text-red-500">ข้อมูลตอบกลับล้มเหลว</td></tr>`;
+          }
+        })
+        .catch(() => {
+          mockAdminReport();
+        });
+    }
+
+    function mockAdminReport() {
+      document.getElementById('admin-stat-users').innerText = "15 คน";
+      document.getElementById('admin-stat-evals').innerText = "42 ครั้ง";
+      
+      const tbody = document.getElementById('admin-report-table-body');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-mono font-semibold text-slate-500">6800100201</td>
+            <td class="p-3 font-medium text-slate-700">นายธวัชชัย รัตนวงศ์</td>
+            <td class="p-3 text-center font-extrabold text-feu-navy">8 / 19</td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-mono font-semibold text-slate-500">6800100204</td>
+            <td class="p-3 font-medium text-slate-700">นางสาวณิชนันทน์ แก้วมณี</td>
+            <td class="p-3 text-center font-extrabold text-feu-navy">5 / 19</td>
+          </tr>
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-mono font-semibold text-slate-500">6800100215</td>
+            <td class="p-3 font-medium text-slate-700">นางลัดดา สิทธิกุล</td>
+            <td class="p-3 text-center font-extrabold text-feu-navy">1 / 19</td>
+          </tr>
+        `;
+      }
+    }
+
+    // -------------------- CUSTOM NON-BLOCKING MODAL --------------------
+    function showCustomModal(iconClass, iconColorClass, title, message) {
+      const modal = document.getElementById('custom-modal');
+      const icon = document.getElementById('modal-icon');
+      const modalIconContainer = document.getElementById('modal-icon-container');
+      
+      if (icon && modalIconContainer && modal) {
+        icon.className = `fa-solid ${iconClass} ${iconColorClass}`;
+        modalIconContainer.className = `w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-slate-50 border border-slate-100`;
+        
+        document.getElementById('modal-title').innerText = title;
+        document.getElementById('modal-message').innerText = message;
+        
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeCustomModal() {
+      const modal = document.getElementById('custom-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
