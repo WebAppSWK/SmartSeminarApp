@@ -68,14 +68,16 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">คำนำหน้า</label>
-                        <select id="student-prefix" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <select id="student-prefix" required onchange="toggleCustomPrefix(this.value)" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                             <option value="">-- เลือก --</option>
                             <option value="นาย">นาย</option>
                             <option value="นาง">นาง</option>
                             <option value="นางสาว">นางสาว</option>
                             <option value="ว่าที่ ร.ต.">ว่าที่ ร.ต.</option>
                             <option value="ว่าที่ ร.ต. หญิง">ว่าที่ ร.ต. หญิง</option>
+                            <option value="other">อื่น ๆ (ระบุเอง)</option>
                         </select>
+                        <input type="text" id="student-prefix-custom" class="hidden mt-2 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="ระบุคำนำหน้าชื่อ เช่น ดร. / อาจารย์">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ - นามสกุล</label>
@@ -671,12 +673,36 @@
         }
 
         /**
+         * CUSTOM PREFIX TOGGLE
+         */
+        function toggleCustomPrefix(value) {
+            const customInput = document.getElementById('student-prefix-custom');
+            if (value === 'other') {
+                customInput.classList.remove('hidden');
+                customInput.required = true;
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                customInput.required = false;
+                customInput.value = '';
+            }
+        }
+
+        /**
          * AUTHENTICATION LOGIC
          */
         function handleLogin() {
             const id = document.getElementById('student-id').value;
-            const prefix = document.getElementById('student-prefix').value;
+            let prefix = document.getElementById('student-prefix').value;
             const name = document.getElementById('student-name').value;
+
+            if (prefix === 'other') {
+                prefix = document.getElementById('student-prefix-custom').value.trim();
+                if (!prefix) {
+                    showCustomAlert("ข้อมูลไม่ถูกต้อง", "กรุณาระบุคำนำหน้าชื่ออื่น ๆ ของท่าน", "error");
+                    return;
+                }
+            }
 
             if (id.length !== 10) {
                 showCustomAlert("ข้อมูลไม่ถูกต้อง", "กรุณาระบุรหัสนักศึกษาให้ครบ 10 หลัก", "error");
@@ -698,6 +724,11 @@
                 currentUser = null;
                 document.getElementById('main-screen').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
+                
+                // Reset Prefix State
+                document.getElementById('student-prefix').value = '';
+                toggleCustomPrefix('');
+                
                 stopScanner();
             }
         }
@@ -1155,7 +1186,7 @@
                                 return value.toFixed(2);
                             }
                         },
-                        tooltip: { // Tooltip ฉบับกำหนดเอง
+                        tooltip: { // Tooltip ฉบับกำหนดเอง (ปรับให้แสดงจำนวนผู้ประเมินด้วย)
                             backgroundColor: 'rgba(17, 24, 39, 0.9)',
                             titleFont: { size: 13, family: 'Sarabun' },
                             bodyFont: { size: 13, family: 'Sarabun' },
@@ -1168,10 +1199,15 @@
                                     const score = context.raw;
                                     const percent = (score * 20).toFixed(1);
                                     
+                                    // ค้นหาจำนวนผู้ประเมินจากข้อมูลดิบ
+                                    const rawBooth = filteredData.find(d => d.booth_id === bId);
+                                    const reviewerCount = rawBooth ? (rawBooth.review_count || 0) : 0;
+                                    
                                     // คืนค่าเป็น Array เพื่อให้แสดงหลายบรรทัด
                                     return [
                                         `${bId} : ${bName}`,
-                                        `ความพึงพอใจร้อยละ ${percent}% (${score.toFixed(2)} ดาว)`
+                                        `ความพึงพอใจร้อยละ ${percent}% (${score.toFixed(2)} ดาว)`,
+                                        `จำนวนผู้ประเมิน: ${reviewerCount} คน`
                                     ];
                                 }
                             }
@@ -1282,11 +1318,14 @@
             boothList.forEach(booth => {
                 const stars = '★'.repeat(Math.round(booth.avg_score)) + '☆'.repeat(5 - Math.round(booth.avg_score));
                 
+                // กรองข้อมูลข้อเสนอแนะ: เอาเฉพาะอันที่มีคอมเมนต์ (comment ไม่ใช่ค่าว่าง)
+                const filteredComments = booth.comments.filter(c => c.comment && c.comment.trim() !== '');
+                
                 let commentsHTML = '';
-                if(booth.comments.length === 0) {
-                    commentsHTML = '<div class="text-sm text-gray-400 italic py-2 pl-4">- ยังไม่มีข้อเสนอแนะ -</div>';
+                if(filteredComments.length === 0) {
+                    commentsHTML = '<div class="text-sm text-gray-400 italic py-2 pl-4">- ยังไม่มีข้อเสนอแนะที่เป็นข้อความ -</div>';
                 } else {
-                    booth.comments.forEach(c => {
+                    filteredComments.forEach(c => {
                         const cStars = '★'.repeat(c.rating) + '☆'.repeat(5 - c.rating);
                         commentsHTML += `
                             <div class="bg-gray-50 p-3 rounded-xl mb-2 border border-gray-100 shadow-sm">
@@ -1294,7 +1333,7 @@
                                     <span class="text-yellow-500 text-xs">${cStars}</span>
                                     <span class="text-[10px] text-gray-400 font-medium">โดย: ${maskCommentName(c.user)}</span>
                                 </div>
-                                <p class="text-sm text-gray-700 leading-relaxed">${c.comment || '<span class="italic text-gray-400">ให้คะแนนแต่ไม่มีคอมเมนต์</span>'}</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">${c.comment}</p>
                             </div>
                         `;
                     });
