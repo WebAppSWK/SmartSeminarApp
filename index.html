@@ -1170,7 +1170,7 @@
                     scales: {
                         y: { 
                             beginAtZero: false, 
-                            suggestedMin: 2.5, // ฐานเริ่มต้นเพื่อให้แท่งกราฟชัด
+                            suggestedMin: 4.0, // ฐานเริ่มต้นเพื่อให้แท่งกราฟชัด
                             max: 5,
                             ticks: { stepSize: 0.5 }
                         }
@@ -1275,7 +1275,7 @@
 
         function maskCommentName(fullName) {
             if (!fullName || fullName === 'ผู้เยี่ยมชม') return 'ผู้เยี่ยมชม';
-            const prefixes = ['ว่าที่ ร.ต. หญิง', 'ว่าที่ ร.ต.', 'นางสาว', 'นาย', 'นาง'];
+            const prefixes = ['นาย', 'นาง','นางสาว'];
             let prefix = '';
             let rest = fullName.trim();
             
